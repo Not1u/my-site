@@ -1,49 +1,50 @@
 # 如何给本站添加内容
 
-本站结构：**源内容在 `content/`，构建产物在 `docs/`，GitHub Pages 从 `docs/` 发布**。
+本站采用**模块化**结构：`content/` 下每个子目录是一个内容模块
+（目录里的 `index.md` 是模块介绍，其余 md 是条目）。
+主页的卡片和"添加新项目"都围绕模块工作。
 
-## 加一篇学习笔记（日常最常用）
+## 方式一：纯浏览器添加（推荐，配了自动构建）
 
-1. 在 `content/notes/` 新建一个 `.md` 文件（文件名建议用英文，便于网址）；
-2. 文件开头用 `# ` 写标题（会作为页面标题）；
-3. 需要插图时，图片放进 `content/assets/`，md 里这样引用：
+1. 点主页右上角 **「＋ 添加新项目」**（或任一模块页里的同名按钮），
+   会打开 GitHub 的网页编辑器（已定位到该模块目录）；
+2. 填文件名（建议英文，如 `my-note.md`）、写内容（Markdown）→ Commit；
+3. 等约 1 分钟：GitHub Actions 会自动跑 `python build.py` 重建 `docs/`
+   并提交，Pages 随后发布——全程不用碰命令行。
 
-   ```
-   ![](../assets/图片名.png)
-   ```
+## 方式二：本机添加（同样有效）
 
-   > 注意路径带 `../`：源目录里从 notes 指向 assets，构建后页面也在
-   > docs/notes/ 下指向 docs/assets，两级目录结构一致，所以照写即可。
+```powershell
+# 在 content/notes/ 下写 md 后
+python build.py            # 本地重建（会先清空旧 docs 再全量生成）
+python build.py --serve    # 预览 http://127.0.0.1:8000
+git add -A && git commit -m "docs: 新增笔记《xxx》" && git push
+```
 
-4. 重新生成并本地检查：
+## 加一个新模块（以后加"项目/分区"用）
 
-   ```powershell
-   python build.py
-   python build.py --serve   # 打开 http://127.0.0.1:8000
-   ```
+模块 = `content/` 下一个新目录，两步：
 
-5. 存档并发布：
+1. 建目录并写 `index.md`（第一行 `# 模块名`，下面写模块简介）;
+2. 往目录里放 md 条目 → 提交 → 自动构建。
 
-   ```powershell
-   git add -A
-   git commit -m "docs: 新增笔记《xxx》"
-   git push
-   ```
+主页会**自动**出现该模块的卡片（标题取 index.md 的 `#`，简介取第一段）。
 
-   推上去后 GitHub Pages 约几十秒内自动更新。
+## 插图片
 
-## 修改/删除
+图片统一放 `content/assets/`，md 里写：
 
-- 改内容：直接编辑对应 md → 重新 `build.py` → commit + push。
-- 删除一篇：删掉 md 文件 → 重新构建（旧 html 会残留在 docs/，手动删对应文件）→ commit + push。
+```
+![](../assets/图片名.png)
+```
 
-## 以后想扩展
+## 修改 / 删除
 
-- 新开一个内容区（如随笔/相册）：在 `content/` 下加子目录，并让 `build.py`
-  增加对应的遍历与首页分组（当前只扫 `notes/`）。
-- 样式统一在 `style.css` 调整——现阶段先不动，等 UI 阶段一起做。
+- 改：编辑 md → 提交 → 自动重建；
+- 删：删除 md 文件 → 提交 → 全量重建会自动清掉对应页面（构建前会清空旧 `docs/`）。
 
-## 内容格式约定（待细化）
+## 说明
 
-- 目前以 **Markdown 文本**为主（纯文本、git diff 友好）；
-- 图片等二进制放 `assets/`（命名规则、压缩策略以后再定）。
+- 内容以 Markdown 纯文本为主（git diff 友好）；图片等二进制放 assets，
+  命名/压缩等约定以后细定。
+- 界面样式为基础版，UI 整体优化放在后续阶段。
