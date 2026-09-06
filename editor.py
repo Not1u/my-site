@@ -84,7 +84,7 @@ def _save(module: str, slug: str, content: str, do_push: bool) -> dict:
     if code != 0:
         return {"ok": False, "error": f"重建失败\n{log}"}
 
-    code, log = _run(["git", "add", "-A"])
+    code, log = _run(["git", "add", "--", "docs", f"content/{module}"])
     if code != 0:
         return {"ok": False, "error": f"git add 失败\n{log}"}
     code, log = _run(["git", "commit", "-m", f"docs: 编辑器新增《{slug}》"])
