@@ -62,3 +62,29 @@ footer {
 }
 
 ul.note-list { padding-left: 1.2rem; }
+
+/* ---------- 主页/模块化布局（基础版，UI 精修留到后续阶段） ---------- */
+.sitehead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.brand { font-weight: 700; text-decoration: none; color: var(--fg); font-size: 1.1rem; }
+.btn {
+  background: var(--accent); color: #fff; text-decoration: none;
+  padding: .35rem .8rem; border-radius: 6px; font-size: .92rem; white-space: nowrap;
+}
+.btn:hover { opacity: .88; }
+.modules {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem; margin: 1.5rem 0;
+}
+.card {
+  display: block; border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; text-decoration: none; color: var(--fg);
+}
+.card:hover { border-color: var(--accent); }
+.card h2 { margin: 0 0 .4rem; font-size: 1.05rem; }
+.card p { margin: 0 0 .6rem; color: #57606a; font-size: .9rem; }
+.card-count { font-size: .85rem; color: var(--accent); }
