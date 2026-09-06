@@ -6,11 +6,13 @@
 
 线上地址：<https://Not1u.github.io/my-site/>
 
-## 加内容（三选一）
+## 加内容
 
+0. **本地写作编辑器（推荐）**：`python editor.py` → 打开 http://127.0.0.1:8010，
+   输入 Markdown、实时预览、「保存并发布」自动提交推送。
 1. **纯浏览器**：点站点右上角「＋ 添加新项目」→ GitHub 网页编辑器写 md →
    提交 → **GitHub Actions 自动构建发布**（约 1 分钟）。
-2. **本机**：写 md → `python build.py` → commit + push。
+2. **本机命令行**：写 md → `python build.py` → commit + push。
 3. **加新模块**：`content/` 下新建目录 + `index.md`，主页卡片自动出现。
 
 ## 本地构建
@@ -27,6 +29,7 @@ python test_md2html.py     # 转换器冒烟测试
 my-site/
 ├── .github/workflows/build-site.yml  # push 后自动重建 docs/ 并提交
 ├── md2html.py / test_md2html.py      # Markdown → HTML 转换器（源自 md-blog）
+├── editor.py                         # ★ 本地写作编辑器（零依赖）
 ├── build.py                          # 模块化构建脚本
 ├── .gitattributes                    # 统一 LF 换行
 ├── content/                          # 站点内容（源）
