@@ -243,10 +243,13 @@ class Handler(BaseHTTPRequestHandler):
     def _read_json(self) -> dict:
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length) if length else b"{}"
-        try:
-            return json.loads(raw.decode("utf-8"))
-        except Exception:
-            return {}
+        # 客户端编码可能不一致，多试几种再解析
+        for enc in ("utf-8-sig", "utf-8", "gb18030"):
+            try:
+                return json.loads(raw.decode(enc))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+        return {}
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -278,6 +281,12 @@ class Handler(BaseHTTPRequestHandler):
             module = (data.get("module") or "notes").strip()
             slug = (data.get("slug") or "").strip()
             content = data.get("content") or ""
+            if not content.strip():
+                self._send(200, json.dumps(
+                    {"ok": False, "error": "内容为空，未保存"},
+                    ensure_ascii=False).encode("utf-8"),
+                    "application/json; charset=utf-8")
+                return
             if not slug:
                 slug = _slug_from_content(content)
             result = _save(module, slug, content, do_push=not self.server.no_push)
