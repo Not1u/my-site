@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{title}</title>
+<link rel="stylesheet" href="../style.css"/>
+</head>
+<body>
+<header class="sitehead">
+  <a class="brand" href="../index.html">个人网站</a>
+  <a class="btn" href="https://github.com/Not1u/my-site/new/main/content/notes" target="_blank" rel="noopener">＋ 添加新项目</a>
+</header>
+<main>
+<h1>用本地编辑器写作</h1>
+<p>本文由本地写作编辑器（editor.py）创建，演示“保存即发布”。</p>
+<h2>怎么用</h2>
+<ol>
+<li>本机运行 <code>python editor.py</code>，打开 http://127.0.0.1:8010；</li>
+<li>左侧选模块/条目，或点「＋ 新建」；</li>
+<li>中间输入 Markdown，右侧预览与发布渲染一致；</li>
+<li>点「保存并发布」→ 自动写文件、重建站点、git 提交并推送，约 1 分钟线上更新。</li>
+</ol>
+<h2>为什么需要本机服务</h2>
+<p>静态站没有后端，浏览器页面无法直接写入仓库；编辑器在本机起一个小服务，把内容变成 git 提交推送到 GitHub，Actions 与 Pages 自动收尾。</p>
+</main>
+<footer>由 my-site 生成</footer>
+</body>
+</html>
