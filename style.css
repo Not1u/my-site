@@ -1,0 +1,64 @@
+/* md-blog 站点样式 */
+:root {
+  --bg: #faf9f6;
+  --fg: #1f2328;
+  --accent: #0969da;
+  --code-bg: #f0f1f3;
+  --border: #d8dee4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  max-width: 720px;
+  padding: 1.5rem 1rem 3rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.75 system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.topnav { margin-bottom: 1rem; }
+.topnav a { color: var(--accent); text-decoration: none; }
+
+h1 { border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+h2 { margin-top: 1.6rem; }
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .8rem 1rem;
+  overflow-x: auto;
+}
+code {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: .1em .35em;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: .92em;
+}
+pre code { background: none; padding: 0; }
+
+blockquote {
+  margin: 1rem 0;
+  padding: .1rem 1rem;
+  border-left: 4px solid var(--border);
+  color: #57606a;
+}
+
+img { max-width: 100%; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: #57606a;
+  font-size: .85rem;
+  text-align: center;
+}
+
+ul.note-list { padding-left: 1.2rem; }
