@@ -6,3 +6,6 @@ __pycache__/
 # 编辑器 / 系统
 .vscode/
 .DS_Store
+
+# 联调临时 JSON（编辑器 git add -A 会误收）
+/_*.json
