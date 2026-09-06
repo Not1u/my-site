@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>如何给本站添加内容</title>
+<link rel="stylesheet" href="../style.css"/>
+</head>
+<body>
+<nav class="topnav"><a href="../index.html">← 首页</a></nav>
+<main>
+<h1>如何给本站添加内容</h1>
+<p>本站结构：<strong>源内容在 <code>content/</code>，构建产物在 <code>docs/</code>，GitHub Pages 从 <code>docs/</code> 发布</strong>。</p>
+<h2>加一篇学习笔记（日常最常用）</h2>
+<ol>
+<li>在 <code>content/notes/</code> 新建一个 <code>.md</code> 文件（文件名建议用英文，便于网址）；</li>
+<li>文件开头用 <code># </code> 写标题（会作为页面标题）；</li>
+<li>需要插图时，图片放进 <code>content/assets/</code>，md 里这样引用：</li>
+</ol>
+<pre><code>   ![](../assets/图片名.png)</code></pre>
+<blockquote>
+<p>注意路径带 <code>../</code>：源目录里从 notes 指向 assets，构建后页面也在 docs/notes/ 下指向 docs/assets，两级目录结构一致，所以照写即可。</p></blockquote>
+
+<ol>
+<li>重新生成并本地检查：</li>
+</ol>
+<pre><code class="language-powershell">   python build.py
+   python build.py --serve   # 打开 http://127.0.0.1:8000</code></pre>
+<ol>
+<li>存档并发布：</li>
+</ol>
+<pre><code class="language-powershell">   git add -A
+   git commit -m "docs: 新增笔记《xxx》"
+   git push</code></pre>
+<p>推上去后 GitHub Pages 约几十秒内自动更新。</p>
+<h2>修改/删除</h2>
+<ul>
+<li>改内容：直接编辑对应 md → 重新 <code>build.py</code> → commit + push。</li>
+<li>删除一篇：删掉 md 文件 → 重新构建（旧 html 会残留在 docs/，手动删对应文件）→ commit + push。</li>
+</ul>
+<h2>以后想扩展</h2>
+<ul>
+<li>新开一个内容区（如随笔/相册）：在 <code>content/</code> 下加子目录，并让 <code>build.py</code></li>
+</ul>
+<p>增加对应的遍历与首页分组（当前只扫 <code>notes/</code>）。</p>
+<ul>
+<li>样式统一在 <code>style.css</code> 调整——现阶段先不动，等 UI 阶段一起做。</li>
+</ul>
+<h2>内容格式约定（待细化）</h2>
+<ul>
+<li>目前以 <strong>Markdown 文本</strong>为主（纯文本、git diff 友好）；</li>
+<li>图片等二进制放 <code>assets/</code>（命名规则、压缩策略以后再定）。</li>
+</ul>
+</main>
+<footer>由 my-site 生成</footer>
+</body>
+</html>

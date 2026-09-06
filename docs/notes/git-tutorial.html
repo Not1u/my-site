@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Git 从零到实践 —— 完整中文教程</title>
+<link rel="stylesheet" href="../style.css"/>
+</head>
+<body>
+<nav class="topnav"><a href="../index.html">← 首页</a></nav>
+<main>
+<h1>Git 从零到实践 —— 完整中文教程</h1>
+<blockquote>
+<p>面向：Windows + PowerShell 环境（本机已装 Git 2.55）。 目标：学完你能独立完成「初始化 → 日常存档 → 分支管理 → 推送 GitHub/Gitee → 出问题回滚」。 配合 DSH：文档最后有「与智能体协作」的约定，读完后可以让 AI 直接帮你操作 git。</p></blockquote>
+
+<hr/>
+<h2>目录</h2>
+<ol>
+<li><a href="#1-git-是什么为什么要用">Git 是什么，为什么要用</a></li>
+<li><a href="#2-环境与首次配置">环境与首次配置</a></li>
+<li><a href="#3-五步上手最小闭环">五步上手：最小闭环</a></li>
+<li><a href="#4-三个区域与日常操作">三个区域与日常操作</a></li>
+<li><a href="#5-撤销与回滚按危险程度分级">撤销与回滚（按危险程度分级）</a></li>
+<li><a href="#6-分支与合并">分支与合并</a></li>
+<li><a href="#7-远程仓库github--gitee">远程仓库：GitHub / Gitee</a></li>
+<li><a href="#8-个人项目存档工作流">个人项目"存档"工作流</a></li>
+<li><a href="#9-与-dsh-智能体协作的-git-约定">与 DSH 智能体协作的 git 约定</a>
+<ol>
+<li><a href="#10-附录命令速查表">附录：命令速查表</a></li>
+</ol></li>
+</ol>
+<hr/>
+<h2>1. Git 是什么，为什么要用</h2>
+<p><strong>一句话</strong>：Git 是"存档 + 时光机 + 多线平行世界管理"工具，替你记录每个文件的每次改动，随时可以回到任意历史版本、对比差异、多人/多机协同。</p>
+<p><strong>和"复制文件夹存备份"的区别</strong>：</p>
+<table>
+<thead><tr><th></th><th>手动复制存档</th><th>Git</th></tr></thead>
+<tbody>
+<tr><td>存了什么</td><td>整个文件夹（巨大）</td><td>每次的<strong>差异</strong>（极小）</td></tr>
+<tr><td>能不能看历史</td><td>不能，只有最新</td><td>每次改动+作者+时间+原因</td></tr>
+<tr><td>出错了能不能回来</td><td>难</td><td>一键回到任意版本</td></tr>
+<tr><td>多版本并行</td><td>复制多个文件夹，乱</td><td>分支，干净利落</td></tr>
+<tr><td>云备份</td><td>手动上传</td><td>push 一条命令</td></tr>
+</tbody>
+</table>
+<p><strong>核心概念（先混个脸熟）</strong>：</p>
+<ul>
+<li><strong>仓库（repository）</strong>：被 git 管理的文件夹，根目录下会有一个隐藏的 <code>.git</code> 目录存放全部历史。</li>
+<li><strong>工作区</strong>：你平时看到的、正在编辑的文件。</li>
+<li><strong>暂存区（index）</strong>：<code>git add</code> 后文件进入的"待提交清单"。</li>
+<li><strong>版本库（commit 历史）</strong>：<code>git commit</code> 把暂存区固化成一个不可变快照。</li>
+<li><strong>commit</strong>：一次存档。每个 commit 有唯一 ID（40 位哈希，平时看前 7 位）。</li>
+<li><strong>HEAD</strong>：指向"当前所在位置"的指针（通常指向当前分支的最新 commit）。</li>
+<li><strong>分支（branch）</strong>：一条独立的提交线。默认主分支叫 <code>main</code>（旧项目叫 <code>master</code>）。</li>
+<li><strong>远程（remote）</strong>：云端或其它机器上的同一仓库副本，常命名为 <code>origin</code>。</li>
+</ul>
+<hr/>
+<h2>2. 环境与首次配置</h2>
+<p>本机 Git 已装好（<code>C:\Program Files\Git</code>，在 PATH 中），PowerShell 里直接敲 <code>git</code> 即可。</p>
+<pre><code class="language-powershell"># 查看版本
+git --version
+
+# 一次性配置身份（决定 commit 上署名谁，已配好可跳过）
+git config --global user.name  "Not1u"
+git config --global user.email "m13761790051@163.com"
+
+# 查看当前全局配置
+git config --global --list</code></pre>
+<blockquote>
+<p><strong>Windows 提示</strong>：首次 add 时常见 <code>LF will be replaced by CRLF</code> 警告，是行尾符自动转换提示，<strong>无害</strong>，不用管。 想安静一点可以执行 <code>git config --global core.autocrlf true</code>。</p></blockquote>
+
+<p><strong>常用设置建议</strong>：</p>
+<pre><code class="language-powershell">git config --global init.defaultBranch main   # 以后 init 默认分支叫 main
+git config --global core.autocrlf true        # Windows 行尾自动转换
+git config --global pull.rebase false         # pull 用 merge（新手友好）</code></pre>
+<hr/>
+<h2>3. 五步上手：最小闭环</h2>
+<p>在 PowerShell 里实操一次（任选一个练习文件夹，如 <code>E:\练习</code>）：</p>
+<pre><code class="language-powershell"># 1) 进入/新建项目文件夹
+mkdir E:\练习\hello-git
+cd E:\练习\hello-git
+
+# 2) 初始化仓库
+git init -b main
+
+# 3) 写一个文件
+Set-Content -Path a.txt -Value "hello git" -Encoding UTF8
+
+# 4) 存进版本库（add + commit 两步）
+git add a.txt
+git commit -m "第一次存档：添加 a.txt"
+
+# 5) 查看成果
+git status        # 干净 = 没有未存档改动
+git log --oneline # 显示提交历史</code></pre>
+<p>改一改文件，再看 git 怎么"看见"你的改动：</p>
+<pre><code class="language-powershell">Add-Content -Path a.txt -Value "第二行内容" -Encoding UTF8
+git status                # 红色/提示: modified a.txt（未暂存）
+git diff                  # 看具体改了什么
+git add a.txt
+git commit -m "第二次存档：追加一行"
+git log --oneline         # 现在有 2 个 commit 了</code></pre>
+<p><strong>到这里你已经会"存档"了。</strong> 后面全是把这三个动作（改 → add → commit）用得更专业。</p>
+<hr/>
+<h2>4. 三个区域与日常操作</h2>
+<pre><code>工作区文件  --git add--&gt;  暂存区(index)  --git commit--&gt;  版本库(HEAD)
+    (你的修改)            (待提交清单)        (永久快照)</code></pre>
+<table>
+<thead><tr><th>命令</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td><code>git status</code></td><td>当前状态：哪些改了、哪些已暂存</td></tr>
+<tr><td><code>git add 文件</code></td><td>把指定改动放入暂存区</td></tr>
+<tr><td><code>git add -A</code></td><td>把<strong>所有</strong>改动（新增/修改/删除）放入暂存区</td></tr>
+<tr><td><code>git add .</code></td><td>同上（当前目录内）</td></tr>
+<tr><td><code>git add -p</code></td><td>交互式挑选"一个文件里的部分行"暂存（精细提交用）</td></tr>
+<tr><td><code>git commit -m "说明"</code></td><td>把暂存区固化成一次存档</td></tr>
+<tr><td><code>git commit -am "说明"</code></td><td>一步完成"已跟踪文件的 add + commit"（新文件仍需先 add）</td></tr>
+<tr><td><code>git diff</code></td><td>工作区 vs 暂存区的差异（还没 add 的改动）</td></tr>
+<tr><td><code>git diff --cached</code></td><td>暂存区 vs 上次提交的差异（已 add 未 commit 的改动）</td></tr>
+<tr><td><code>git log</code></td><td>提交历史（<code>--oneline</code> 一行一条，<code>-n 5</code> 只看 5 条）</td></tr>
+<tr><td><code>git show &lt;commitID&gt;</code></td><td>看某次提交改了什么</td></tr>
+</tbody>
+</table>
+<p><strong>提交信息（commit message）规范</strong>——让人和 AI 都能看懂历史：</p>
+<pre><code>格式：&lt;类型&gt;: &lt;干什么了&gt;
+
+feat: 新增扫码连接功能
+fix: 修复连接失败时崩溃的问题
+docs: 更新 README 安装说明
+refactor: 重构 WebView 初始化代码
+chore: 更新构建脚本</code></pre>
+<p><strong><code>.gitignore</code>——让 git 无视某些文件</strong>（密钥、构建产物、临时文件）： 在仓库根目录建一个 <code>.gitignore</code> 文本文件，每行一条规则：</p>
+<pre><code>build/
+*.apk
+密钥目录/
+*.log</code></pre>
+<p>之后 <code>git add -A</code> 会自动跳过这些。</p>
+<hr/>
+<h2>5. 撤销与回滚（按危险程度分级）</h2>
+<p><strong>原则：能"重做"的改动用 restore；已推送公网的提交用 revert；reset 只动本地时用。</strong></p>
+<h3>级别 0：还没 add（改乱了想放弃）</h3>
+<pre><code class="language-powershell">git restore 文件.txt        # 把该文件还原成上次提交的样子（丢弃本次改动）
+git restore .               # 还原全部</code></pre>
+<blockquote>
+<p>危险：被还原的改动<strong>永久丢失</strong>，没有后悔药。谨慎用。</p></blockquote>
+
+<h3>级别 1：已经 add 了（想取消暂存，但保留改动）</h3>
+<pre><code class="language-powershell">git restore --staged 文件.txt   # 从暂存区拿下来（文件改动还在工作区）</code></pre>
+<h3>级别 2：已 commit，但想"补一刀"（改提交信息/补漏文件）</h3>
+<pre><code class="language-powershell">git commit --amend -m "修正后的信息"   # 把最后一次提交替换掉（会生成新 ID）</code></pre>
+<blockquote>
+<p>⚠️ 只对<strong>还没推送</strong>的提交用；已 push 的不要 amend（历史会被改写，同步会乱）。</p></blockquote>
+
+<h3>级别 3：已 commit 多步，想撤销某次（推荐 revert，安全）</h3>
+<pre><code class="language-powershell">git log --oneline          # 找到要撤销的提交 ID
+git revert &lt;commitID&gt;      # 生成一个"反向的新提交"来抵消它，历史不被改写</code></pre>
+<blockquote>
+<p>revert 不删除历史、不影响别人，<strong>任何情况都安全</strong>，是"反悔"的首选。</p></blockquote>
+
+<h3>级别 4：回退指针（reset，本地可用，推送过就麻烦）</h3>
+<p>三个模式对照（<code>&lt;版本ID&gt;</code> 可用 <code>HEAD</code>、<code>HEAD~1</code>(上一次)、<code>HEAD~3</code>(前三次) 或真实哈希）：</p>
+<table>
+<thead><tr><th>模式</th><th>版本库</th><th>暂存区</th><th>工作区</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td><code>git reset --soft &lt;版本&gt;</code></td><td>回退</td><td>保留</td><td>保留</td><td>想重新分组提交</td></tr>
+<tr><td><code>git reset --mixed &lt;版本&gt;</code>（默认）</td><td>回退</td><td>清空</td><td>保留</td><td>取消已 add</td></tr>
+<tr><td><code>git reset --hard &lt;版本&gt;</code></td><td>回退</td><td>清空</td><td><strong>清空</strong></td><td>彻底回到过去 ⚠️</td></tr>
+</tbody>
+</table>
+<pre><code class="language-powershell">git reset --hard HEAD~1    # 丢弃最后一次提交及其所有改动（不可逆！）
+git reset --hard &lt;commitID&gt; # 整体回到某个历史版本</code></pre>
+<blockquote>
+<p><code>--hard</code> 后工作区文件会被覆盖/删除，<strong>无法找回</strong>（除非有 reflog，见下）。新手慎用。</p></blockquote>
+
+<h3>后悔药：reflog（reset --hard 后想找回）</h3>
+<pre><code class="language-powershell">git reflog          # 列出所有"曾经到过"的位置（包括被 reset 掉的）
+git reset --hard &lt;旧ID&gt;   # 从 reflog 里找回</code></pre>
+<hr/>
+<h2>6. 分支与合并</h2>
+<p><strong>为什么需要分支</strong>：想在"存档主线"上试验新功能、改 bug，又不想把半成品混进主线 → 开一条平行线，做完再合回来。</p>
+<pre><code class="language-powershell"># 查看/新建/切换
+git branch                # 列出本地分支（* 号=当前）
+git branch 新功能名        # 新建分支（不切换）
+git checkout -b 新功能名   # 新建并立即切换（老写法）
+git switch -c 新功能名      # 新建并立即切换（新写法，推荐）
+git switch main           # 切回主线
+
+# 在分支上正常 改→add→commit，提交只属于当前分支</code></pre>
+<p><strong>合并回主线</strong>：</p>
+<pre><code class="language-powershell">git switch main           # 先回到 main
+git merge 新功能名         # 把分支内容并进来
+git branch -d 新功能名     # 合并完删掉分支</code></pre>
+<p><strong>冲突（conflict）</strong>：两人/两分支改了同一行时，merge 会停下：</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+主线里的版本
+=======
+分支里的版本
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 新功能名</code></pre>
+<p>解决步骤：</p>
+<ol>
+<li>打开文件，手动保留想要的写法，删掉 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; ======= &gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 标记行；</li>
+<li><code>git add 该文件</code>；</li>
+<li><code>git commit -m "合并分支"</code>（git 会提示 merge 冲突已完成）。</li>
+</ol>
+<p><strong>个人存档推荐</strong>：<code>main</code> 永远保持"可用的正式版"；做新功能开分支，做完合回、打 tag 发版。</p>
+<hr/>
+<h2>7. 远程仓库：GitHub / Gitee</h2>
+<p>本地仓库 ≠ 备份。要"电脑坏了也不丢 + 多台设备同步"，配一个云端远程。</p>
+<h3>7.1 生成 SSH 密钥（本机已生成 ✅）</h3>
+<p>已生成 ed25519 密钥。若换机器重做：</p>
+<pre><code class="language-powershell">ssh-keygen -t ed25519 -C "你的邮箱"
+Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub   # 复制输出的整行公钥</code></pre>
+<h3>7.2 把公钥告诉 GitHub</h3>
+<ol>
+<li>登录 <a href="https://github.com">github.com</a> → 右上角头像 → <strong>Settings</strong></li>
+<li>左侧 <strong>SSH and GPG keys</strong> → <strong>New SSH key</strong></li>
+<li>Title 随意（如 <code>DESKTOP-DELL</code>），Key 粘贴公钥整行 → <strong>Add SSH key</strong></li>
+</ol>
+<h3>7.3 测试连通</h3>
+<pre><code class="language-powershell">ssh -T git@github.com
+# 首次会问是否信任主机，输入 yes；看到 "Hi Not1u! You've successfully authenticated" 即成功</code></pre>
+<h3>7.4 在 GitHub 网页上建一个空仓库</h3>
+<p>New repository → 名字如 <code>dsh-mobile</code> → <strong>不要</strong>勾选 Add README（避免和本地冲突）→ Create。 创建后页面会给两条命令，照抄即可：</p>
+<h3>7.5 把本地仓库推上去</h3>
+<pre><code class="language-powershell"># 在本地仓库目录里执行：
+git remote add origin git@github.com:你的用户名/dsh-mobile.git   # 关联远程，命名 origin
+git push -u origin main                                          # 首次推送（-u 记住对应关系）</code></pre>
+<h3>7.6 之后的日常循环</h3>
+<pre><code class="language-powershell">git add -A
+git commit -m "说明"
+git push            # 推送到云端</code></pre>
+<p>多台机器/换电脑拉下来：</p>
+<pre><code class="language-powershell">git clone git@github.com:你的用户名/dsh-mobile.git   # 首次拿全仓库
+git pull                                             # 之后同步远程最新改动</code></pre>
+<p><strong>几个注意点</strong>：</p>
+<ul>
+<li>先 <code>git pull</code> 再 <code>git push</code>，有分歧时先解决再推；</li>
+<li><code>git remote -v</code> 查看远程地址；</li>
+<li>不想用 SSH 也可用 HTTPS + 个人访问令牌（PAT），但 SSH 更省事；</li>
+<li>Gitee 同理：公钥粘到 gitee.com → 设置 → SSH 公钥。</li>
+</ul>
+<hr/>
+<h2>8. 个人项目"存档"工作流</h2>
+<p>把 git 当"自动存档系统"用的日常节奏：</p>
+<ol>
+<li><strong>每完成一个有意义的改动就 commit 一次</strong>（不要憋一整天一次提交）</li>
+<li><strong>提交信息写清"做了什么+为什么"</strong>（见第 4 节格式）</li>
+<li><strong>发布一个版本就打 tag</strong></li>
+</ol>
+<pre><code class="language-powershell">   git tag v1.1                # 给当前 commit 打标签
+   git tag -a v1.1 -m "DSH 手机端 1.1 正式版"   # 带说明的标签（推荐）
+   git push origin v1.1        # 推送标签
+   git tag                     # 查看所有标签</code></pre>
+<ol>
+<li><strong>想回到某个发布版</strong>：<code>git checkout v1.1</code>（查看）/ <code>git switch -c 修复分支 v1.1</code>（基于它开分支改）</li>
+<li><strong>每轮工作结束前检查</strong>：<code>git status</code> 应干净；有未提交就补 commit</li>
+</ol>
+<p><strong>小抄式的完整一轮</strong>：</p>
+<pre><code class="language-powershell">git status                          # 看有什么改动
+git diff                            # 确认改对没有
+git add -A
+git commit -m "feat: 增加xxx"
+git push                            # 有远程时
+git log --oneline -5                # 确认历史</code></pre>
+<hr/>
+<h2>9. 与 DSH 智能体协作的 git 约定</h2>
+<p>你在这套 Harness 里让我（智能体）做项目时，可以随时说"<strong>用 git 存档</strong>"，我会执行以上命令。为了让协作顺畅，建议项目根目录放一个 <code>git工作流规范.md</code>（已为 手机端APP 仓库建好），约定如下：</p>
+<ul>
+<li>我在<strong>每轮工作完成、确认结果无误后</strong>，自动执行 <code>git add -A &amp;&amp; git commit</code>，提交信息按 <code>&lt;类型&gt;: 描述</code> 规范写；</li>
+<li><strong>敏感文件（签名密钥、含 token 的配置）绝不提交</strong>，靠 <code>.gitignore</code> 拦；</li>
+<li>大版本完成后打 tag（如 <code>v1.1</code>），方便你随时回滚/对比；</li>
+<li>涉及"撤销/回滚/force"等危险操作前，我会先说明后果再执行；</li>
+<li>你说"不要自动存档"时，我只在明确要求后 commit。</li>
+</ul>
+<blockquote>
+<p>把 git 命令直接交给智能体跑是安全的：git 每次改动都有记录、可回滚，比手改文件安全得多。</p></blockquote>
+
+<hr/>
+<h2>10. 附录：命令速查表</h2>
+<p><strong>开始</strong></p>
+<pre><code class="language-powershell">git init -b main          # 初始化
+git clone &lt;远程地址&gt;       # 克隆远程仓库</code></pre>
+<p><strong>日常三连</strong></p>
+<pre><code class="language-powershell">git status                # 状态
+git add -A                # 全加
+git commit -m "msg"       # 存档</code></pre>
+<p><strong>查看</strong></p>
+<pre><code class="language-powershell">git log --oneline --graph -10   # 图形化最近10条
+git diff                        # 未暂存差异
+git diff --cached               # 已暂存差异
+git show &lt;ID&gt;                   # 某次提交</code></pre>
+<p><strong>撤销</strong></p>
+<pre><code class="language-powershell">git restore 文件               # 丢弃工作区改动
+git restore --staged 文件      # 取消暂存
+git revert &lt;ID&gt;                # 安全撤销某次提交
+git reset --hard &lt;ID&gt;          # 强回退（慎用）
+git reflog                     # 后悔药</code></pre>
+<p><strong>分支</strong></p>
+<pre><code class="language-powershell">git branch                      # 列表
+git switch -c 名字               # 新建并切换
+git switch 名字                  # 切换
+git merge 分支                   # 合并
+git branch -d 分支               # 删分支</code></pre>
+<p><strong>远程</strong></p>
+<pre><code class="language-powershell">git remote -v                      # 查看远程
+git remote add origin &lt;地址&gt;        # 关联
+git push -u origin main            # 首次推送
+git push                           # 推送
+git pull                           # 拉取
+git tag -a v1.1 -m "说明" &amp;&amp; git push origin v1.1   # 打标签并推送</code></pre>
+<p><strong>其它</strong></p>
+<pre><code class="language-powershell">git stash          # 临时藏起未提交改动（换分支用）
+git stash pop      # 取回
+git config --global alias.lg "log --oneline --graph"   # 自定义别名：git lg</code></pre>
+<hr/>
+<p><em>学完标准：能不查资料独立完成「init → 多次 commit → 建分支改东西 → 合并 → 打 tag → 推 GitHub → revert 一次错误提交」。做到了，日常存档绰绰有余。</em></p>
+</main>
+<footer>由 my-site 生成</footer>
+</body>
+</html>
